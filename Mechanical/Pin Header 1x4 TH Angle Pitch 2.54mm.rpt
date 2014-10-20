@@ -1,0 +1,63 @@
+*****************************************************************
+      SolidWorks Corporation - IGES Processor Status Report
+*****************************************************************
+=================================================================
+General Information
+=================================================================
+Sending System Product I.D.  : 
+Receiving System Product I.D.: 
+File Name                    : C:\Users\Mart\Documents\Libraries\3D Componenten\Pin Headers\Pin Headers 1x1 angle TH Pitch 2.54mm\Pin Header 1x4 TH Angle Pitch 2.54mm.igs
+Sending System               : Rhinoceros ( Oct 24 2012 )
+Preprocessor Version         : Trout Lake IGES 012 Oct 24 2012
+File Creation Date           : 140621.114909
+Model Creation Date          : 140621.114909
+Units                        : MM
+Model Space Scale            : 1
+Author                       : 
+Organization                 : 
+
+
+=================================================================
+Entity Processing Information
+=================================================================
+
+
+=================================================================
+Precision analysis of IGES file:
+=================================================================
+  Most prevalent number of significant digits:              14
+  Highest number of significant digits:                     14
+  Average number of significant digits:                12.8906
+  Maximum distance to origin:                          14.6743
+  Minimum distance to origin:                         0.153849
+  Effective number of significant digits:              13.9909
+
+
+=================================================================
+Entity Summary
+=================================================================
+-----------------------------------------------------------------
+Type Name                                         Count Converted
+---- ----                                         ----- ---------
+102  Composite curve                                  5         5
+126  Rational B-spline curve                       1590      1590
+128  Rational B-spline surface                      180       180
+141  Boundary                                       152       152
+143  Bounded surface                                144       144
+314  Color definition                                 2         2
+406  Property                                         2         2
+_________________________________________________________________
+
+
+=================================================================
+Result Summary
+=================================================================
+SolidWorks Feature Type                Count
+-----------------------                -----
+Solid feature(s)                       2
+Surface feature(s)                     6
+Curve/Sketch feature(s)                0
+--------------------------------------------
+Start time: Saturday, October 04, 2014 16:33:56
+Finish time: Saturday, October 04, 2014 16:34:00
+Processing time: 0 days, 00 hours, 00 mins, 04 secs

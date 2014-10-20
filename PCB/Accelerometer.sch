@@ -1,0 +1,214 @@
+EESchema Schematic File Version 2
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:special
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:Mylib
+LIBS:sumoBot-cache
+EELAYER 27 0
+EELAYER END
+$Descr USLetter 11000 8500
+encoding utf-8
+Sheet 8 8
+Title "Accelerometer"
+Date "20 oct 2014"
+Rev "01"
+Comp "Sumo Bot"
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L MMA8653FC U10
+U 1 1 5439A38E
+P 5300 4050
+F 0 "U10" H 5000 4450 60  0000 C CNN
+F 1 "MMA8653FC" H 5300 3750 39  0000 C CNN
+F 2 "" H 5300 4050 60  0000 C CNN
+F 3 "" H 5300 4050 60  0000 C CNN
+	1    5300 4050
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R19
+U 1 1 5439A394
+P 6200 3600
+F 0 "R19" V 6280 3600 40  0000 C CNN
+F 1 "1k" V 6207 3601 40  0000 C CNN
+F 2 "~" V 6130 3600 30  0000 C CNN
+F 3 "~" H 6200 3600 30  0000 C CNN
+	1    6200 3600
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R18
+U 1 1 5439A39A
+P 3800 3650
+F 0 "R18" V 3880 3650 40  0000 C CNN
+F 1 "1k" V 3807 3651 40  0000 C CNN
+F 2 "~" V 3730 3650 30  0000 C CNN
+F 3 "~" H 3800 3650 30  0000 C CNN
+	1    3800 3650
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C26
+U 1 1 5439A3AE
+P 4050 3600
+F 0 "C26" H 4050 3700 40  0000 L CNN
+F 1 "0.1uF" H 4056 3515 40  0000 L CNN
+F 2 "~" H 4088 3450 30  0000 C CNN
+F 3 "~" H 4050 3600 60  0000 C CNN
+	1    4050 3600
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C28
+U 1 1 5439A3B4
+P 4300 3600
+F 0 "C28" H 4300 3700 40  0000 L CNN
+F 1 "1uF" H 4306 3515 40  0000 L CNN
+F 2 "~" H 4338 3450 30  0000 C CNN
+F 3 "~" H 4300 3600 60  0000 C CNN
+	1    4300 3600
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR068
+U 1 1 5439A3BA
+P 4050 3850
+F 0 "#PWR068" H 4050 3850 30  0001 C CNN
+F 1 "GND" H 4050 3780 30  0001 C CNN
+F 2 "" H 4050 3850 60  0000 C CNN
+F 3 "" H 4050 3850 60  0000 C CNN
+	1    4050 3850
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C29
+U 1 1 5439A3C0
+P 6800 3700
+F 0 "C29" H 6800 3800 40  0000 L CNN
+F 1 "0.1uF" H 6806 3615 40  0000 L CNN
+F 2 "~" H 6838 3550 30  0000 C CNN
+F 3 "~" H 6800 3700 60  0000 C CNN
+	1    6800 3700
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C27
+U 1 1 5439A3C6
+P 4050 4400
+F 0 "C27" H 4050 4500 40  0000 L CNN
+F 1 "0.1uF" H 4056 4315 40  0000 L CNN
+F 2 "~" H 4088 4250 30  0000 C CNN
+F 3 "~" H 4050 4400 60  0000 C CNN
+	1    4050 4400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5950 4150 6200 4150
+Wire Wire Line
+	6200 3950 6200 4650
+Wire Wire Line
+	5950 4250 6200 4250
+Connection ~ 6200 4250
+Wire Wire Line
+	5950 3950 6200 3950
+Connection ~ 6200 4150
+Wire Wire Line
+	4500 3850 4650 3850
+Wire Wire Line
+	4500 3150 4500 3850
+Wire Wire Line
+	3450 3950 4650 3950
+Wire Wire Line
+	3800 3950 3800 3900
+Wire Wire Line
+	3800 3300 6800 3300
+Connection ~ 4500 3300
+Wire Wire Line
+	6200 3300 6200 3350
+Connection ~ 6200 3850
+Connection ~ 3800 3950
+Wire Wire Line
+	5950 3850 6450 3850
+Wire Wire Line
+	3800 3400 3800 3300
+Wire Wire Line
+	4300 3400 4300 3300
+Connection ~ 4300 3300
+Wire Wire Line
+	4050 3400 4050 3300
+Connection ~ 4050 3300
+Wire Wire Line
+	4050 3800 4300 3800
+Wire Wire Line
+	4050 3800 4050 3850
+Wire Wire Line
+	5950 4050 6800 4050
+Wire Wire Line
+	6800 3300 6800 3500
+Connection ~ 6200 3300
+Wire Wire Line
+	6800 4050 6800 3900
+Wire Wire Line
+	4650 4150 4050 4150
+Wire Wire Line
+	4050 4600 4050 4650
+Wire Wire Line
+	4050 4150 4050 4200
+Wire Wire Line
+	4650 4250 4400 4250
+Wire Wire Line
+	4650 4050 4400 4050
+Text HLabel 3450 3950 0    39   Input ~ 0
+SCL
+Text HLabel 6450 3850 2    39   BiDi ~ 0
+SDA
+Wire Wire Line
+	4050 4650 6200 4650
+Connection ~ 6200 4650
+Text HLabel 4400 4050 0    39   Output ~ 0
+INT1
+Text HLabel 4400 4250 0    39   Output ~ 0
+INT2
+$Comp
+L +3.3V #PWR069
+U 1 1 543D0232
+P 4500 3150
+F 0 "#PWR069" H 4500 3110 30  0001 C CNN
+F 1 "+3.3V" H 4500 3260 30  0000 C CNN
+F 2 "" H 4500 3150 60  0000 C CNN
+F 3 "" H 4500 3150 60  0000 C CNN
+	1    4500 3150
+	1    0    0    -1  
+$EndComp
+$EndSCHEMATC
