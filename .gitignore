@@ -32,3 +32,7 @@ Hardware/_Previews/
 Hardware/History/
 Hardware/Project Outputs for SumoBot/
 Hardware/Project Logs for SumoBot/
+Debug/
+Hardware/__Previews/
+*.bak
+*.original
