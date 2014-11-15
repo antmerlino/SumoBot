@@ -36,3 +36,8 @@ Debug/
 Hardware/__Previews/
 *.bak
 *.original
+Hardware/SumoBot.Dat
+Hardware/SumoBot.OutJob
+Hardware/Thumbs.db
+Documentation/.~lock.BOM.ods#
+Mechanical/Thumbs.db
