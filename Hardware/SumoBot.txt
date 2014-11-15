@@ -1,0 +1,37 @@
+Field=Description~String~Description~67|Field=Designator~String~Designator~178|Field=Footprint~String~Footprint~49|Field=LibRef~String~LibRef~51|Field=Quantity~Integer~Quantity~69|Field=Value~String~Value~194|ReportField=Currency~<none>|ReportField=ProductionQuantity~1|ReportField=ProjectFileName~SumoBot.PrjPcb|ReportField=ProjectFullPath~G:\Projects\Sumo Bot\Hardware\SumoBot.PrjPcb|ReportField=Title~Bill of Materials For Project [SumoBot.PrjPcb] (No PCB Document Selected)|ReportField=TotalQuantity~86|ReportField=ReportTime~4:59:20 PM|ReportField=ReportDate~11/1/2014|ReportField=ReportDateTime~11/1/2014 4:59:20 PM|ReportField=OutputName~Bill of Materials|ReportField=OutputType~BOM_PartType|ReportField=GeneratorName~BOM|ReportField=GeneratorDescription~Bill of Materials|ReportField=VariantName~None|ReportField=Address1~|ReportField=Address2~|ReportField=Address3~|ReportField=Address4~|ReportField=Application_BuildNumber~|ReportField=ApprovedBy~|ReportField=Author~|ReportField=CheckedBy~|ReportField=CompanyName~|ReportField=CurrentDate~11/1/2014|ReportField=CurrentTime~4:51:46 PM|ReportField=Date~|ReportField=DocumentFullPathAndName~G:\Projects\Sumo Bot\Hardware\Accelerometer.SchDoc|ReportField=DocumentName~Accelerometer.SchDoc|ReportField=DocumentNumber~|ReportField=DrawnBy~|ReportField=Engineer~|ReportField=ImagePath~|ReportField=ModifiedDate~10/21/2014|ReportField=Organization~|ReportField=ProjectName~SumoBot.PrjPcb|ReportField=Revision~|ReportField=Rule~|ReportField=SheetNumber~|ReportField=SheetTotal~|ReportField=Time~|ReportField=Title~|ReportField=DataSourceFileName~SumoBot.PrjPcb|ReportField=DataSourceFullPath~G:\Projects\Sumo Bot\Hardware\SumoBot.PrjPcb
+Capacitor|C1, C2|0805|Cap|2|10uF
+Capacitor|C3, C4|0805|Cap|2|22uF
+Capacitor|C5, C7, C9, C12, C13, C18, C20, C21, C24, C25, C28, C29|0805|Cap|12|0.1uF
+Capacitor|C6, C8, C10|0805|Cap|3|0.01uF
+Capacitor|C11, C14|0805|Cap|2|1.0uF
+Capacitor|C15|0805|Cap|1|2.2uF
+Capacitor|C16, C17|0805|Cap|2|10pF
+Capacitor|C19|0805|Cap|1|1uF
+Polarized Capacitor|C22, C23, C26, C27|1206|Cap Pol|4|10uF
+Default Diode|D1|SMA|Diode|1|
+LED|D2|0603|LED|1|
+|D3|DO-214AC|Zener Diode|1|
+|D4|DO-214AC|Zener Diode|1|
+LED|D5, D6|LED-Bent|LED|2|
+Fuse|F1|0805|Fuse|1|
+|IRR1, IRR2|TSL262R|TSL262R|2|
+10-Pin JTAG Connector for Cortex M4 etc.|J1|TAG Connect 10p|10-Pin JTAG ARM|1|
+Header, 2-Pin|P1, P10, P11, P12, P13|HDR1X2|Header 2|5|
+Header, 4-Pin|P3|HDR1X4|Header 4|1|
+Header, 6-Pin|P4|HDR1X6|Header 6|1|
+Header, 4-Pin|P5, P6, P7, P8, P9|HDR1X4|Header 4|5|
+Header, 3-Pin|P14, P15|HDR1X3|Header 3|2|
+Resistor|R1|0805|Resistor|1|500
+Resistor|R2, R3, R4, R5, R6, R7, R8, R12, R13|0805|Resistor|9|1K
+Resistor|R9, R10, R11|0805|Resistor|3|100k
+Resistor|R14, R16, R18|0805|Resistor|3|220
+Resistor|R15, R17, R19|0805|Resistor|3|47k
+Switch|S1, S2|KMR4|SPST Tactile Switch|2|
+Single-Pole, Single-Throw Switch|S3|SPST Switch|SW-SPST|1|
+Tiva C TM4C123GH6PM|U1|TSQFP50P1200X1200X145-64N|TM4C123GH6PM|1|
+|U2|SOT26|AL5802|1|
+MMA8653FC Accelerometer 3-Axis|U3|DFN-10|MMA8653FC|1|
+|U4, U5|SSOP24-P-300-0.65A|TB6612FNG|2|
+|U6, U7, U8|QRE1113GR|QRE1113GR|3|
+AP1117|VR1, VR2|SOT-223|AP1117|2|
+Crystal Oscillator|Y1|ABM3_SERIES|XTAL|1|

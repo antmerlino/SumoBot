@@ -27,3 +27,8 @@
 *.i*86
 *.x86_64
 *.hex
+
+Hardware/_Previews/
+Hardware/History/
+Hardware/Project Outputs for SumoBot/
+Hardware/Project Logs for SumoBot/
