@@ -16,8 +16,14 @@
 
 #include "reflective_sensors.h"
 #include "timing.h"
+#include "subsys.h"
+#include "sumo.h"
 
-int i;
+#define COMPARATOR_0 1
+#define COMPARATOR_1 2
+#define COMPARATOR_2 4
+
+version_t REFLECT_VERSION;
 
 void ReflectiveInit(){
 	// Init ADC system peripherals
@@ -28,49 +34,65 @@ void ReflectiveInit(){
 	GPIOPinTypeADC(GPIO_PORTD_BASE, GPIO_PIN_0 | GPIO_PIN_3);
 	GPIOPinTypeADC(GPIO_PORTE_BASE, GPIO_PIN_5);
 
-	// Configure the sequencer ADC1, sequencer 1, priority 3
+	//Enable register access to ADC0
+	SysCtlPeripheralEnable( SYSCTL_PERIPH_ADC0 );
+
+	//Set up the ADC sequencer
 	ADCSequenceConfigure(ADC0_BASE, 1, ADC_TRIGGER_ALWAYS, 3);
-	ADCSequenceStepConfigure(ADC0_BASE, 1, 0, ADC_CTL_CH7 | ADC_CTL_CMP0);
-	ADCSequenceStepConfigure(ADC0_BASE, 1, 1, ADC_CTL_CH7 | ADC_CTL_END);
+	ADCSequenceStepConfigure(ADC0_BASE, 1, 0, ADC_CTL_CH4);
+	ADCSequenceStepConfigure(ADC0_BASE, 1, 1, ADC_CTL_CH7|ADC_CTL_CMP0);
+	ADCSequenceStepConfigure(ADC0_BASE, 1, 2, ADC_CTL_CH8|ADC_CTL_CMP1);
+	ADCSequenceStepConfigure(ADC0_BASE, 1, 3, ADC_CTL_CH4 | ADC_CTL_CMP2 | ADC_CTL_END);
 	ADCSequenceEnable(ADC0_BASE, 1);
 
-	// Configure the steps in the ADC to sample PD3, PD0, PE5
-//	ADCSequenceStepConfigure(ADC0_BASE, 1, 0, ADC_CTL_CH4 | ADC_CTL_CMP0);	// PD3 - left reflective sensor
-//	ADCSequenceStepConfigure(ADC0_BASE, 1, 1, ADC_CTL_CH7 | ADC_CTL_CMP1);	// PD0 - center reflective sensor
-//	ADCSequenceStepConfigure(ADC0_BASE, 1, 2, ADC_CTL_CH8 | ADC_CTL_CMP2);	// PE5 - right reflective sensor
-//	ADCSequenceStepConfigure(ADC0_BASE, 1, 3, ADC_CTL_CH7 | ADC_CTL_END);	// must sample the last channel twice when using comparators
-
-	// Configure the comparator
-	ADCComparatorConfigure(ADC0_BASE, 0, ADC_COMP_TRIG_NONE | ADC_COMP_INT_HIGH_HONCE); // Double check this configuration
-//	ADCComparatorConfigure(ADC0_BASE, 1, ADC_COMP_TRIG_NONE | ADC_COMP_INT_HIGH_HONCE); // Double check this configuration
-//	ADCComparatorConfigure(ADC0_BASE, 2, ADC_COMP_TRIG_NONE | ADC_COMP_INT_HIGH_HONCE); // Double check this configuration
-
-	ADCComparatorRegionSet(ADC0_BASE, 0, REFLECTIVE_REF_LOW, REFLECTIVE_REF_HIGH); // Need to test and calibrate these Reference points
-//	ADCComparatorRegionSet(ADC0_BASE, 1, REFLECTIVE_REF_LOW, REFLECTIVE_REF_HIGH); // Need to test and calibrate these Reference points
-//	ADCComparatorRegionSet(ADC0_BASE, 2, REFLECTIVE_REF_LOW, REFLECTIVE_REF_HIGH); // Need to test and calibrate these Reference points
-
+	//Set up comparator 0
+	ADCComparatorConfigure(ADC0_BASE, 0, ADC_COMP_TRIG_NONE | ADC_COMP_INT_LOW_HONCE );
+	ADCComparatorRegionSet(ADC0_BASE, 0, REFLECTIVE_REF_LOW, REFLECTIVE_REF_HIGH);
 	ADCComparatorReset(ADC0_BASE, 0, true, true);
-//	ADCComparatorReset(ADC0_BASE, 1, true, true);
-//	ADCComparatorReset(ADC0_BASE, 2, true, true);
-
 	ADCComparatorIntEnable(ADC0_BASE, 1);
 
-	// Register the interrupt handler for the ADC interrupt on ADC1, seq. 1
-	ADCIntRegister(ADC0_BASE, 1, ReflectiveISR);
+	//Set up comparator 1
+	ADCComparatorConfigure(ADC0_BASE, 1, ADC_COMP_TRIG_NONE | ADC_COMP_INT_LOW_HONCE );
+	ADCComparatorRegionSet(ADC0_BASE, 1, REFLECTIVE_REF_LOW, REFLECTIVE_REF_HIGH);
+	ADCComparatorReset(ADC0_BASE, 1, true, true);
+	ADCComparatorIntEnable(ADC0_BASE, 1);
 
-	// Enable sample sequencer 2 interrupt enable
+	//Set up comparator 2
+	ADCComparatorConfigure(ADC0_BASE, 2, ADC_COMP_TRIG_NONE | ADC_COMP_INT_LOW_HONCE );
+	ADCComparatorRegionSet(ADC0_BASE, 2, REFLECTIVE_REF_LOW, REFLECTIVE_REF_HIGH);
+	ADCComparatorReset(ADC0_BASE, 2, true, true);
+	ADCComparatorIntEnable(ADC0_BASE, 1);
+
+	ADCIntRegister(ADC0_BASE, 1, ReflectiveISR);
 	ADCIntEnable(ADC0_BASE, 1);
+
+	REFLECT_VERSION.word = 0x14110800LU;
+	SubsystemInit(REFLECT, MESSAGE, "REFLECT", REFLECT_VERSION);
 }
 
-void ReflectiveISR(void){
+void ReflectiveISR(void) {
+	//Determine which comparator caused the interrupt
+	uint32_t comparatorStatus = ADCComparatorIntStatus(ADC0_BASE);
+
 	// Clear the interrupt
 	ADCComparatorIntClear(ADC0_BASE, 0x0F); // Clear the interrupt
-	// stop everything!
-	// Turn around
-	// Start over (GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_1) ^ 1)
-	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, 2); // Turn on
-	DelayMs(200);
-	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, 0x00); // Turn off
+
+	switch(comparatorStatus){
+
+	case COMPARATOR_0:
+		LogMsg(REFLECT, MESSAGE, "Left Sensor Detected Edge");
+		break;
+	case COMPARATOR_1:
+		LogMsg(REFLECT, MESSAGE, "Center Sensor Detected Edge");
+		break;
+	case COMPARATOR_2:
+		LogMsg(REFLECT, MESSAGE, "Right Sensor Detected Edge");
+		break;
+	}
+
+	if(SumoGetState() != IDLE){
+		SumoSetState(REVERSE);
+	}
 }
 
 //// Do we really need this? Why not just leave the IRs on and have the interrupt thrown when we see white?
