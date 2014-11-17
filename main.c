@@ -10,6 +10,7 @@
 
 #include "motor.h"
 #include "reflective_sensors.h"
+#include "ir_sensors.h"
 
 version_t SUMO_VERSION;
 
@@ -47,6 +48,7 @@ int main(void)
 	SUMO_VERSION.word = 0x14110800LU;
 
 	ReflectiveInit();
+	ir_init();
 	TimerInit();
 	TaskInit();
 	SystemInit();
@@ -80,10 +82,6 @@ int main(void)
 				motors[BACKRIGHT_MOTOR].duty_tenths_perc = 0;
 				break;
 			case SEARCH:
-//
-//
-//
-//
 //				// If true, we haven't started searching yet
 //				if(searchDir == CW){
 //					Search_StartTime = TimeNow();
