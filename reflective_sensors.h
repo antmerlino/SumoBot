@@ -17,8 +17,8 @@
 #include <driverlib/sysctl.h>
 
 #define NUM_REFLECTIVE_SENSORS 3
-#define REFLECTIVE_REF_LOW  500
-#define REFLECTIVE_REF_HIGH 600
+#define REFLECTIVE_REF_LOW  2500
+#define REFLECTIVE_REF_HIGH 3000
 
 typedef union{
 

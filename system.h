@@ -19,15 +19,18 @@ enum sys_index {
     SYSTEM = 0,
     // ADD SUBSYSTEMS BELOW //
     SUMO,
+    REFLECT,
+    IR,
     // ADD SUBSYSTEMS ABOVE //
     UNKNOWN
 };
 
-#define SUBSYS_USE_UART3
-#define USE_UART3
-#define UART3_BAUD 115200
+//this is a test
 
-#define LOG_BUF &tx3
+#define SUBSYS_USE_UART4
+#define USE_UART4
+#define UART4_BAUD 115200
 
+#define LOG_BUF &tx4
 
 #endif /* SYSTEM_H_ */

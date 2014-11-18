@@ -11,18 +11,19 @@
 #include "motor.h"
 #include "reflective_sensors.h"
 #include "ir_sensors.h"
+#include "sumo.h"
 
 version_t SUMO_VERSION;
 
 #define TURN_AROUND_TIME 500
+#define REVERSE_TIME 200
 #define SEARCH_TURN_TIME 350
 
-enum state {
-	IDLE = 0,
-	SEARCH,
-	ATTACK,
-	TURN_AROUND
-} state;
+#define SPEED 150
+
+const char const * state2String[]={"Idle", "Search", "Attack", "Reverse", "Turn Around", "Turn Left", "Turn Right"};
+
+sumo_state_t state;
 
 //enum search_state {
 //	IDLE = 0;
@@ -32,15 +33,21 @@ enum state {
 //
 //} search_state;
 
+tint_t moveTimer = 0;
+
 void Switch2Idle(void);
 void PollStartButton(void);
+
+ir_shortrange_data_t ir_shortrange_data;
+ir_longrange_data_t ir_longrange_data;
+bool start = false;
 
 int main(void)
 {
 
 	tint_t Search_StartTime = 0;
-	tint_t turnTime = 0;
 	uint8_t searchDir = 0;
+
 
 	// Setup the clock to be 40MHz
 	SysCtlClockSet(SYSCTL_SYSDIV_5 | SYSCTL_USE_PLL | SYSCTL_XTAL_16MHZ |SYSCTL_OSC_MAIN);
@@ -63,18 +70,19 @@ int main(void)
 
 	LogMsg(SUMO, MESSAGE, "System Initialized!");
 
-	state = IDLE;
+	SumoSetState(IDLE);
 
-//	MotorsEnableFront();
-//	MotorsEnableBack();
+	MotorsEnableFront();
+	MotorsEnableBack();
 
-	MotorsDisableFront();
-	MotorsDisableBack();
+	//	MotorsDisableFront();
+	//	MotorsDisableBack();
 
 	IntMasterEnable();
 
 	while(1){
-		switch (state){
+		while(start){
+			switch (state){
 			case IDLE:
 				motors[FRONTLEFT_MOTOR].duty_tenths_perc = 0;
 				motors[BACKLEFT_MOTOR].duty_tenths_perc = 0;
@@ -82,15 +90,15 @@ int main(void)
 				motors[BACKRIGHT_MOTOR].duty_tenths_perc = 0;
 				break;
 			case SEARCH:
-//				// If true, we haven't started searching yet
-//				if(searchDir == CW){
-//					Search_StartTime = TimeNow();
-//					searchDir++;
-//					motors[FRONTLEFT_MOTOR].direction = CW;
-//					motors[BACKLEFT_MOTOR].direction = CW;
-//					motors[FRONTRIGHT_MOTOR].direction = CW;
-//					motors[BACKRIGHT_MOTOR].direction = CW;
-//				}
+				// If true, we haven't started searching yet
+				if(searchDir == CW){
+					Search_StartTime = TimeNow();
+					searchDir++;
+					motors[FRONTLEFT_MOTOR].direction = CW;
+					motors[BACKLEFT_MOTOR].direction = CW;
+					motors[FRONTRIGHT_MOTOR].direction = CW;
+					motors[BACKRIGHT_MOTOR].direction = CW;
+				}
 //				// Switch Directions
 //				if(TimeSince(Search_StartTime) > SEARCH_TURN_TIME){
 //					Search_StartTime = TimeNow();
@@ -106,16 +114,16 @@ int main(void)
 //					motors[FRONTRIGHT_MOTOR].direction ^= 1;
 //					motors[BACKRIGHT_MOTOR].direction ^= 1;
 //				}
-//				motors[FRONTLEFT_MOTOR].duty_tenths_perc = 200;
-//				motors[BACKLEFT_MOTOR].duty_tenths_perc = 200;
-//				motors[FRONTRIGHT_MOTOR].duty_tenths_perc = 200;
-//				motors[BACKRIGHT_MOTOR].duty_tenths_perc = 200;
-//				break;
+				motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED*2;
+				motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED*2;
+				motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED*2;
+				motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED*2;
+				break;
 			case ATTACK:
-				motors[FRONTLEFT_MOTOR].duty_tenths_perc = 200;
-				motors[BACKLEFT_MOTOR].duty_tenths_perc = 200;
-				motors[FRONTRIGHT_MOTOR].duty_tenths_perc = 200;
-				motors[BACKRIGHT_MOTOR].duty_tenths_perc = 200;
+				motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
+				motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
+				motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
+				motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
 
 				motors[FRONTLEFT_MOTOR].direction = CCW;
 				motors[BACKLEFT_MOTOR].direction = CCW;
@@ -123,40 +131,104 @@ int main(void)
 				motors[BACKRIGHT_MOTOR].direction = CW;
 
 				break;
+			case REVERSE:
+				motors[FRONTLEFT_MOTOR].direction = CW;
+				motors[BACKLEFT_MOTOR].direction = CW;
+				motors[FRONTRIGHT_MOTOR].direction = CCW;
+				motors[BACKRIGHT_MOTOR].direction = CCW;
+
+				motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
+				motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
+				motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
+				motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
+
+				if(TimeSince(moveTimer) > REVERSE_TIME){
+					SumoSetState(TURN_AROUND);
+				}
+
+				break;
 			case TURN_AROUND:
-//				turnTime = TimeNow();
 				motors[FRONTLEFT_MOTOR].direction = CW;
 				motors[BACKLEFT_MOTOR].direction = CW;
 				motors[FRONTRIGHT_MOTOR].direction = CW;
 				motors[BACKRIGHT_MOTOR].direction = CW;
 
-				motors[FRONTLEFT_MOTOR].duty_tenths_perc = 200;
-				motors[BACKLEFT_MOTOR].duty_tenths_perc = 200;
-				motors[FRONTRIGHT_MOTOR].duty_tenths_perc = 200;
-				motors[BACKRIGHT_MOTOR].duty_tenths_perc = 200;
+				motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
+				motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
+				motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
+				motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
 
-				if(TimeSince(turnTime) > TURN_AROUND_TIME){
-					state = IDLE;
+				if(TimeSince(moveTimer) > TURN_AROUND_TIME){
+					SumoSetState(ATTACK);
 				}
 				break;
-		}
+			case TURN_LEFT:
+				motors[FRONTLEFT_MOTOR].direction = CW;
+				motors[BACKLEFT_MOTOR].direction = CW;
+				motors[FRONTRIGHT_MOTOR].direction = CW;
+				motors[BACKRIGHT_MOTOR].direction = CW;
 
+				motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
+				motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
+				motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
+				motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
+				break;
+			case TURN_RIGHT:
+				motors[FRONTLEFT_MOTOR].direction = CCW;
+				motors[BACKLEFT_MOTOR].direction = CCW;
+				motors[FRONTRIGHT_MOTOR].direction = CCW;
+				motors[BACKRIGHT_MOTOR].direction = CCW;
+
+				motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
+				motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
+				motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
+				motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
+				break;
+			}
+
+			PollStartButton();
+			SystemTick();
+			MotorsUpdate();
+			update_ir(&ir_longrange_data);
+		}
 		PollStartButton();
-		SystemTick();
-//		IR_Update();
-		MotorsUpdate();
 	}
 }
 
 
 void PollStartButton(void){
-	if(!GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_2)){
+	if(!GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_2) && (SumoGetState() == IDLE)){
 		DelayMs(5000);
-		state = SEARCH;
+		SumoSetState(SEARCH);
+		start = true;
 	}
 }
 
+void SumoSetState(sumo_state_t newState){
+	state = newState;
+	LogMsg(SUMO, MESSAGE, "State Updated: %s", state2String[state]);
 
-void Switch2Idle(void){
-	state = IDLE;
+	switch (state){
+
+	case(TURN_AROUND):
+				motors[FRONTLEFT_MOTOR].direction = BRAKE;
+	motors[BACKLEFT_MOTOR].direction = BRAKE;
+	motors[FRONTRIGHT_MOTOR].direction = BRAKE;
+	motors[BACKRIGHT_MOTOR].direction = BRAKE;
+	MotorsUpdate();
+	moveTimer = TimeNow();
+	break;
+	case(REVERSE):
+				motors[FRONTLEFT_MOTOR].direction = BRAKE;
+	motors[BACKLEFT_MOTOR].direction = BRAKE;
+	motors[FRONTRIGHT_MOTOR].direction = BRAKE;
+	motors[BACKRIGHT_MOTOR].direction = BRAKE;
+	MotorsUpdate();
+	moveTimer = TimeNow();
+	break;
+	}
+}
+
+sumo_state_t SumoGetState(void){
+	return state;
 }
