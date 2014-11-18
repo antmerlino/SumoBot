@@ -93,7 +93,7 @@ void ir_poll_long(ir_longrange_data_t *ir_longrange_data){
 
 	// Copy data from the ADC0 sample sequencer 0 to Buffer ir_data
 	ADCSequenceDataGet(ADC1_BASE, 0, (ir_longrange_data->adc_ir_long_data));
-
+//
 //	LogMsg(IR, MESSAGE, "IR data: %d\t%d\t%d\t%d\t%d\t", ir_longrange_data->adc_ir_long_data[0],
 //				ir_longrange_data->adc_ir_long_data[1], ir_longrange_data->adc_ir_long_data[2],
 //				ir_longrange_data->adc_ir_long_data[3], ir_longrange_data->adc_ir_long_data[4]);
@@ -152,44 +152,56 @@ enemy_state_t EnemyGetState(void){
 
 void update_ir(ir_longrange_data_t *ir_longrange_data){
 	// Poll the large IRs, determine if the short IRs are needed, set state
-	LogMsg(IR, MESSAGE, "IR_UPDATE");
+//	LogMsg(IR, MESSAGE, "IR_UPDATE");
 	ir_poll_long(ir_longrange_data);
 	uint32_t temp = 0;
 	uint8_t dir = 10;
 	uint16_t diff = 0;
-	uint16_t IR_THRESHOLDS[5] = {1200, 1200, 1100, 800, 1100};
+	uint16_t IR_THRESHOLDS[5] = {800, 700, 700, 500, 600};
 	int i;
 	for(i=0; i<IR_LONGRANGE_SENSORS; i++){
-		if(ir_longrange_data->adc_ir_long_data[i] > temp && ir_longrange_data->adc_ir_long_data[i] > IR_THRESHOLDS[i]){
-			if(ir_longrange_data->adc_ir_long_data[i]-IR_THRESHOLDS[i] > diff){
-				diff = ir_longrange_data->adc_ir_long_data[i]-IR_THRESHOLDS[i];
+		if(ir_longrange_data->adc_ir_long_data[i] > IR_THRESHOLDS[i] && (ir_longrange_data->adc_ir_long_data[i] - IR_THRESHOLDS[i])  > temp){
+			//if(ir_longrange_data->adc_ir_long_data[i]-IR_THRESHOLDS[i] > diff){
+				//diff = ir_longrange_data->adc_ir_long_data[i]-IR_THRESHOLDS[i];
 				temp = ir_longrange_data->adc_ir_long_data[i];
 				dir = i;
-			}
+			//}
 		}
 	}
+	if(dir == 0 || dir == 1){
+		diff = ir_longrange_data->adc_ir_long_data[0] - ir_longrange_data->adc_ir_long_data[1];
+		if(abs(diff < 500)){
+			dir = 5; // Directly in front of you
+		}
+	}
+
+	LogMsg(IR, MESSAGE, "IR dir: %d", dir);
 	switch(dir){
 		case 0:
+			SumoSetState(FRONT_LEFT); // to the front left
+			break;
 		case 1:
-			EnemySetState(FRONT);
-//			SumoSetState(ATTACK);
+//			EnemySetState(FRONT);
+			SumoSetState(FRONT_RIGHT);	// to the front right
 			break;
 		case 2:
-			EnemySetState(LEFT);
-//			SumoSetState(SEARCH);
+//			EnemySetState(LEFT);
+			SumoSetState(TURN_LEFT);	// to the left
 			break;
 		case 3:
-			EnemySetState(RIGHT);
-//			SumoSetState(SEARCH);
+//			EnemySetState(RIGHT);
+			SumoSetState(TURN_RIGHT);	// to the right
 			break;
 		case 4:
-			EnemySetState(BACK);
-//			SumoSetState(SEARCH);
+//			EnemySetState(BACK);
+			SumoSetState(TURN_AROUND);	// behind you
+			break;
+		case 5:
+			SumoSetState(ATTACK);	// Directly in front
 			break;
 		default:
-			EnemySetState(NONE);
-//			SumoSetState(SEARCH);
+//			EnemySetState(NONE);
+			SumoSetState(ATTACK);	// can't see anything
 			break;
 	}
-//	DelayMs(200);
 }

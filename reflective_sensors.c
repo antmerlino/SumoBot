@@ -81,12 +81,21 @@ void ReflectiveISR(void) {
 
 	case COMPARATOR_0:
 		LogMsg(REFLECT, MESSAGE, "Left Sensor Detected Edge");
+//		if(SumoGetState() != IDLE){
+//			SumoSetState(REVERSE_RIGHT);
+//		}
 		break;
 	case COMPARATOR_1:
 		LogMsg(REFLECT, MESSAGE, "Center Sensor Detected Edge");
+//		if(SumoGetState() != IDLE){
+//			SumoSetState(REVERSE);
+//		}
 		break;
 	case COMPARATOR_2:
 		LogMsg(REFLECT, MESSAGE, "Right Sensor Detected Edge");
+//		if(SumoGetState() != IDLE){
+//			SumoSetState(REVERSE_LEFT);
+//		}
 		break;
 	}
 

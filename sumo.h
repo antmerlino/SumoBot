@@ -15,7 +15,11 @@ typedef enum sumo_state_t {
 	REVERSE,
 	TURN_AROUND,
 	TURN_LEFT,
-	TURN_RIGHT
+	TURN_RIGHT,
+	FRONT_LEFT,
+	FRONT_RIGHT,
+	REVERSE_LEFT,
+	REVERSE_RIGHT
 } sumo_state_t;
 
 

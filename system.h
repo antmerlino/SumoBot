@@ -25,8 +25,6 @@ enum sys_index {
     UNKNOWN
 };
 
-//this is a test
-
 #define SUBSYS_USE_UART4
 #define USE_UART4
 #define UART4_BAUD 115200
