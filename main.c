@@ -33,7 +33,6 @@ void PollStartButton(void);
 
 ir_shortrange_data_t ir_shortrange_data;
 ir_longrange_data_t ir_longrange_data;
-bool start = false;
 tint_t Search_StartTime = 0;
 
 int main(void)
@@ -60,8 +59,9 @@ int main(void)
 	SubsystemInit(SUMO, MESSAGE, "SUMO", SUMO_VERSION);
 
 	LogMsg(SUMO, MESSAGE, "System Initialized!");
-
+	LogMsg(SUMO, MESSAGE, "Reset Register: %d", SysCtlResetCauseGet());
 	SumoSetState(IDLE);
+	SysCtlResetCauseClear(0xFFFF);
 
 	MotorsEnableFront();
 	MotorsEnableBack();
@@ -72,24 +72,23 @@ int main(void)
 	IntMasterEnable();
 
 	while(1){
-		while(start){
-			switch (state){
-			case IDLE:
-				motors[FRONTLEFT_MOTOR].duty_tenths_perc = 0;
-				motors[BACKLEFT_MOTOR].duty_tenths_perc = 0;
-				motors[FRONTRIGHT_MOTOR].duty_tenths_perc = 0;
-				motors[BACKRIGHT_MOTOR].duty_tenths_perc = 0;
-				break;
-			case SEARCH:
-				// If true, we haven't started searching yet
-				if(searchDir == CW){
+		switch (state){
+		case IDLE:
+			motors[FRONTLEFT_MOTOR].duty_tenths_perc = 0;
+			motors[BACKLEFT_MOTOR].duty_tenths_perc = 0;
+			motors[FRONTRIGHT_MOTOR].duty_tenths_perc = 0;
+			motors[BACKRIGHT_MOTOR].duty_tenths_perc = 0;
+			break;
+		case SEARCH:
+			// If true, we haven't started searching yet
+			if(searchDir == CW){
 //					Search_StartTime = TimeNow();
 //					searchDir++;
-					motors[FRONTLEFT_MOTOR].direction = CW;
-					motors[BACKLEFT_MOTOR].direction = CW;
-					motors[FRONTRIGHT_MOTOR].direction = CW;
-					motors[BACKRIGHT_MOTOR].direction = CW;
-				}
+				motors[FRONTLEFT_MOTOR].direction = CW;
+				motors[BACKLEFT_MOTOR].direction = CW;
+				motors[FRONTRIGHT_MOTOR].direction = CW;
+				motors[BACKRIGHT_MOTOR].direction = CW;
+			}
 //				// Switch Directions
 //				if(TimeSince(Search_StartTime) > SEARCH_TURN_TIME){
 //					Search_StartTime = TimeNow();
@@ -105,135 +104,132 @@ int main(void)
 //					motors[FRONTRIGHT_MOTOR].direction ^= 1;
 //					motors[BACKRIGHT_MOTOR].direction ^= 1;
 //				}
-				motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
-				motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
-				motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
-				motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
-				break;
-			case ATTACK:
-				motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
-				motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
-				motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
-				motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
+			motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
+			motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
+			motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
+			motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
+			break;
+		case ATTACK:
+			motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
+			motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
+			motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
+			motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
 
-				motors[FRONTLEFT_MOTOR].direction = CCW;
-				motors[BACKLEFT_MOTOR].direction = CCW;
-				motors[FRONTRIGHT_MOTOR].direction = CW;
-				motors[BACKRIGHT_MOTOR].direction = CW;
+			motors[FRONTLEFT_MOTOR].direction = CCW;
+			motors[BACKLEFT_MOTOR].direction = CCW;
+			motors[FRONTRIGHT_MOTOR].direction = CW;
+			motors[BACKRIGHT_MOTOR].direction = CW;
 
-				break;
-			case REVERSE:
-				motors[FRONTLEFT_MOTOR].direction = CW;
-				motors[BACKLEFT_MOTOR].direction = CW;
-				motors[FRONTRIGHT_MOTOR].direction = CCW;
-				motors[BACKRIGHT_MOTOR].direction = CCW;
+			break;
+		case REVERSE:
+			motors[FRONTLEFT_MOTOR].direction = CW;
+			motors[BACKLEFT_MOTOR].direction = CW;
+			motors[FRONTRIGHT_MOTOR].direction = CCW;
+			motors[BACKRIGHT_MOTOR].direction = CCW;
 
-				motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
-				motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
-				motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
-				motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
+			motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
+			motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
+			motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
+			motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
 
-				if(TimeSince(moveTimer) > REVERSE_TIME){
-					SumoSetState(TURN_AROUND);
-				}
+			if(TimeSince(moveTimer) > REVERSE_TIME){
+				SumoSetState(TURN_AROUND);
+			}
 
-				break;
-			case TURN_AROUND:
-				motors[FRONTLEFT_MOTOR].direction = CW;
-				motors[BACKLEFT_MOTOR].direction = CW;
-				motors[FRONTRIGHT_MOTOR].direction = CW;
-				motors[BACKRIGHT_MOTOR].direction = CW;
+			break;
+		case TURN_AROUND:
+			motors[FRONTLEFT_MOTOR].direction = CW;
+			motors[BACKLEFT_MOTOR].direction = CW;
+			motors[FRONTRIGHT_MOTOR].direction = CW;
+			motors[BACKRIGHT_MOTOR].direction = CW;
 
-				motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
-				motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
-				motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
-				motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
+			motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
+			motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
+			motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
+			motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
 //what is the point of this if it is the same as TURN_LEFT?
-				if(TimeSince(moveTimer) > TURN_AROUND_TIME){
-					SumoSetState(ATTACK);
-				}
-				break;
-			case TURN_LEFT:
-				motors[FRONTLEFT_MOTOR].direction = CW;
-				motors[BACKLEFT_MOTOR].direction = CW;
-				motors[FRONTRIGHT_MOTOR].direction = CW;
-				motors[BACKRIGHT_MOTOR].direction = CW;
-
-				motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
-				motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
-				motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
-				motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
-				break;
-			case TURN_RIGHT:
-				motors[FRONTLEFT_MOTOR].direction = CCW;
-				motors[BACKLEFT_MOTOR].direction = CCW;
-				motors[FRONTRIGHT_MOTOR].direction = CCW;
-				motors[BACKRIGHT_MOTOR].direction = CCW;
-
-				motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
-				motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
-				motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
-				motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
-				break;
-			case FRONT_LEFT:
-				motors[FRONTLEFT_MOTOR].direction = CCW;
-				motors[BACKLEFT_MOTOR].direction = CCW;
-				motors[FRONTRIGHT_MOTOR].direction = CW;
-				motors[BACKRIGHT_MOTOR].direction = CW;
-
-				motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
-				motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
-				motors[FRONTRIGHT_MOTOR].duty_tenths_perc = 1.25*SPEED;
-				motors[BACKRIGHT_MOTOR].duty_tenths_perc = 1.25*SPEED;
-				break;
-			case FRONT_RIGHT:
-				motors[FRONTLEFT_MOTOR].direction = CCW;
-				motors[BACKLEFT_MOTOR].direction = CCW;
-				motors[FRONTRIGHT_MOTOR].direction = CW;
-				motors[BACKRIGHT_MOTOR].direction = CW;
-
-				motors[FRONTLEFT_MOTOR].duty_tenths_perc = 1.25*SPEED;
-				motors[BACKLEFT_MOTOR].duty_tenths_perc = 1.25*SPEED;
-				motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
-				motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
-				break;
-			case REVERSE_LEFT:
-				motors[FRONTLEFT_MOTOR].direction = CW;
-				motors[BACKLEFT_MOTOR].direction = CW;
-				motors[FRONTRIGHT_MOTOR].direction = CCW;
-				motors[BACKRIGHT_MOTOR].direction = CCW;
-
-				motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
-				motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
-				motors[FRONTRIGHT_MOTOR].duty_tenths_perc = 1.25*SPEED;
-				motors[BACKRIGHT_MOTOR].duty_tenths_perc = 1.25*SPEED;
-				break;
-			case REVERSE_RIGHT:
-				motors[FRONTLEFT_MOTOR].direction = CW;
-				motors[BACKLEFT_MOTOR].direction = CW;
-				motors[FRONTRIGHT_MOTOR].direction = CCW;
-				motors[BACKRIGHT_MOTOR].direction = CCW;
-
-				motors[FRONTLEFT_MOTOR].duty_tenths_perc = 1.25*SPEED;
-				motors[BACKLEFT_MOTOR].duty_tenths_perc = 1.25*SPEED;
-				motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
-				motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
-				break;
+			if(TimeSince(moveTimer) > TURN_AROUND_TIME){
+				SumoSetState(ATTACK);
 			}
+			break;
+		case TURN_LEFT:
+			motors[FRONTLEFT_MOTOR].direction = CW;
+			motors[BACKLEFT_MOTOR].direction = CW;
+			motors[FRONTRIGHT_MOTOR].direction = CW;
+			motors[BACKRIGHT_MOTOR].direction = CW;
 
-			SystemTick();
-			MotorsUpdate();
-			if(state != REVERSE && state != REVERSE_LEFT && state != REVERSE_RIGHT && state != TURN_AROUND){
-				if(TimeSince(Search_StartTime) > IR_TIMEOUT){
-					Search_StartTime = TimeNow();
-					update_ir(&ir_longrange_data);
-//					ir_poll_long(&ir_longrange_data);
-				}
-			}
+			motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
+			motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
+			motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
+			motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
+			break;
+		case TURN_RIGHT:
+			motors[FRONTLEFT_MOTOR].direction = CCW;
+			motors[BACKLEFT_MOTOR].direction = CCW;
+			motors[FRONTRIGHT_MOTOR].direction = CCW;
+			motors[BACKRIGHT_MOTOR].direction = CCW;
 
-		}
+			motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
+			motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
+			motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
+			motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
+			break;
+		case FRONT_LEFT:
+			motors[FRONTLEFT_MOTOR].direction = CCW;
+			motors[BACKLEFT_MOTOR].direction = CCW;
+			motors[FRONTRIGHT_MOTOR].direction = CW;
+			motors[BACKRIGHT_MOTOR].direction = CW;
+
+			motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
+			motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
+			motors[FRONTRIGHT_MOTOR].duty_tenths_perc = 1.25*SPEED;
+			motors[BACKRIGHT_MOTOR].duty_tenths_perc = 1.25*SPEED;
+			break;
+		case FRONT_RIGHT:
+			motors[FRONTLEFT_MOTOR].direction = CCW;
+			motors[BACKLEFT_MOTOR].direction = CCW;
+			motors[FRONTRIGHT_MOTOR].direction = CW;
+			motors[BACKRIGHT_MOTOR].direction = CW;
+
+			motors[FRONTLEFT_MOTOR].duty_tenths_perc = 1.25*SPEED;
+			motors[BACKLEFT_MOTOR].duty_tenths_perc = 1.25*SPEED;
+			motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
+			motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
+			break;
+		case REVERSE_LEFT:
+			motors[FRONTLEFT_MOTOR].direction = CW;
+			motors[BACKLEFT_MOTOR].direction = CW;
+			motors[FRONTRIGHT_MOTOR].direction = CCW;
+			motors[BACKRIGHT_MOTOR].direction = CCW;
+
+			motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
+			motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
+			motors[FRONTRIGHT_MOTOR].duty_tenths_perc = 1.25*SPEED;
+			motors[BACKRIGHT_MOTOR].duty_tenths_perc = 1.25*SPEED;
+			break;
+		case REVERSE_RIGHT:
+			motors[FRONTLEFT_MOTOR].direction = CW;
+			motors[BACKLEFT_MOTOR].direction = CW;
+			motors[FRONTRIGHT_MOTOR].direction = CCW;
+			motors[BACKRIGHT_MOTOR].direction = CCW;
+
+			motors[FRONTLEFT_MOTOR].duty_tenths_perc = 1.25*SPEED;
+			motors[BACKLEFT_MOTOR].duty_tenths_perc = 1.25*SPEED;
+			motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
+			motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
+			break;
+		}// switch
 		PollStartButton();
-	}
+		SystemTick();
+		MotorsUpdate();
+		if(state != REVERSE && state != REVERSE_LEFT && state != REVERSE_RIGHT && state != TURN_AROUND && state != IDLE){
+			if(TimeSince(Search_StartTime) > IR_TIMEOUT){
+				Search_StartTime = TimeNow();
+				update_ir(&ir_longrange_data);
+//					ir_poll_long(&ir_longrange_data);
+			}
+		}
+	}// while
 }
 
 
@@ -241,7 +237,6 @@ void PollStartButton(void){
 	if(!GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_2) && (SumoGetState() == IDLE)){
 		DelayMs(5000);
 		SumoSetState(ATTACK);
-		start = true;
 		Search_StartTime = TimeNow();
 	}
 }

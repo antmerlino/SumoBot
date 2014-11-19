@@ -160,7 +160,7 @@ void update_ir(ir_longrange_data_t *ir_longrange_data){
 	uint16_t IR_THRESHOLDS[5] = {800, 700, 700, 500, 600};
 	int i;
 	for(i=0; i<IR_LONGRANGE_SENSORS; i++){
-		if(ir_longrange_data->adc_ir_long_data[i] > IR_THRESHOLDS[i] && (ir_longrange_data->adc_ir_long_data[i] - IR_THRESHOLDS[i])  > temp){
+		if(ir_longrange_data->adc_ir_long_data[i] > 1200 && ir_longrange_data->adc_ir_long_data[i] > temp){
 			//if(ir_longrange_data->adc_ir_long_data[i]-IR_THRESHOLDS[i] > diff){
 				//diff = ir_longrange_data->adc_ir_long_data[i]-IR_THRESHOLDS[i];
 				temp = ir_longrange_data->adc_ir_long_data[i];
@@ -175,33 +175,34 @@ void update_ir(ir_longrange_data_t *ir_longrange_data){
 		}
 	}
 
-	LogMsg(IR, MESSAGE, "IR dir: %d", dir);
-	switch(dir){
-		case 0:
-			SumoSetState(FRONT_LEFT); // to the front left
-			break;
-		case 1:
-//			EnemySetState(FRONT);
-			SumoSetState(FRONT_RIGHT);	// to the front right
-			break;
-		case 2:
-//			EnemySetState(LEFT);
-			SumoSetState(TURN_LEFT);	// to the left
-			break;
-		case 3:
-//			EnemySetState(RIGHT);
-			SumoSetState(TURN_RIGHT);	// to the right
-			break;
-		case 4:
-//			EnemySetState(BACK);
-			SumoSetState(TURN_AROUND);	// behind you
-			break;
-		case 5:
-			SumoSetState(ATTACK);	// Directly in front
-			break;
-		default:
-//			EnemySetState(NONE);
-			SumoSetState(ATTACK);	// can't see anything
-			break;
-	}
+//	LogMsg(IR, MESSAGE, "IR dir: %d", dir);
+//	switch(dir){
+//		case 0:
+//			SumoSetState(FRONT_LEFT); // to the front left
+//			break;
+//		case 1:
+////			EnemySetState(FRONT);
+//			SumoSetState(FRONT_RIGHT);	// to the front right
+//			break;
+//		case 2:
+////			EnemySetState(LEFT);
+//			SumoSetState(TURN_LEFT);	// to the left
+//			break;
+//		case 3:
+////			EnemySetState(RIGHT);
+//			SumoSetState(TURN_RIGHT);	// to the right
+//			break;
+//		case 4:
+////			EnemySetState(BACK);
+//			SumoSetState(TURN_AROUND);	// behind you
+//			break;
+//		case 5:
+//			SumoSetState(ATTACK);	// Directly in front
+//			break;
+//		default:
+////			EnemySetState(NONE);
+////			SumoSetState(ATTACK);	// can't see anything
+//			break;
+//	}
+	DelayMs(200);
 }

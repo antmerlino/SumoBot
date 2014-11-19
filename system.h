@@ -21,6 +21,7 @@ enum sys_index {
     SUMO,
     REFLECT,
     IR,
+    MOTOR,
     // ADD SUBSYSTEMS ABOVE //
     UNKNOWN
 };

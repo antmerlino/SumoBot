@@ -36,7 +36,7 @@
  * Period of motor PWM signals
  * NOTE: About 52000 us is the high limit for period!
  */
-#define MOTOR_PERIOD 10000
+#define MOTOR_PERIOD 100
 /**
  * Enumeration providing an index to each motor
  */

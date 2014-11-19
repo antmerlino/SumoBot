@@ -16,13 +16,19 @@
 #include <driverlib/sysctl.h>
 
 #include "system.h"
+#include "subsys.h"
 #include "motor.h"
 
 
 static inline calc_cycles(uint32_t us) {return (PWM_TIMER_FREQ/1000000.0)*us;}
 static inline calc_usec(uint32_t cycles) {return (1000000.0/PWM_TIMER_FREQ)*cycles;}
 
+version_t MOTOR_VERSION;
+
 motor_state_t motors[4];
+
+// Callback function definition
+void MotorLogCallback(char * cmd);
 
 void MotorsInit(void) {
 
@@ -89,6 +95,11 @@ void MotorsInit(void) {
 	PWMGenEnable(PWM1_BASE, PWM_GEN_2);
 	pin_mask = 1 << (0x0000000F & PWM_OUT_5);
 	PWMOutputState(PWM1_BASE, pin_mask, 0);
+
+	// Add debugging option
+	MOTOR_VERSION.word = 0x14110800LU;
+	SubsystemInit(MOTOR, MESSAGE, "MOTOR", MOTOR_VERSION);
+	RegisterCallback(MOTOR, MotorLogCallback);
 }
 
 void MotorsEnableFront(){
@@ -105,6 +116,20 @@ void MotorsDisableFront(){
 
 void MotorsDisableBack(){
 	GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_5, OFF);
+}
+
+void MotorLogCallback(char * cmd) {
+//	LogMsg(MOTOR, MESSAGE, "CMD Received: %s", cmd);
+	switch(*cmd) {
+	case 'y':
+		MotorsEnableFront();
+		MotorsEnableBack();
+		break;
+	case 'n':
+		MotorsDisableFront();
+		MotorsDisableBack();
+		break;
+	}
 }
 
 void MotorsUpdate(){
