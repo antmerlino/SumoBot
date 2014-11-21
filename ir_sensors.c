@@ -19,10 +19,16 @@
 
 version_t IR_VERSION;
 
-enemy_state_t enemyState;
 
-const char const * enemyState2String[]={"NONE", "FRONT", "LEFT", "RIGHT", "BACK"};
+ir_shortrange_data_t ir_shortrange_data;
+ir_longrange_data_t ir_longrange_data;
 
+uint8_t debuglong = 0;
+uint8_t debugshort = 0;
+uint8_t debugdir = 0;
+
+// Callback function definition
+void IRLogCallback(char * cmd);
 
 void ir_init(){
 
@@ -74,6 +80,22 @@ void ir_init(){
 
 	IR_VERSION.word = 0x14110800LU;
 	SubsystemInit(IR, MESSAGE, "IR", IR_VERSION);
+	RegisterCallback(IR, IRLogCallback);
+}
+
+void IRLogCallback(char * cmd) {
+	//	LogMsg(MOTOR, MESSAGE, "CMD Received: %s", cmd);
+	switch(*cmd) {
+	case 'l':
+		debuglong ^= 1;
+		break;
+	case 's':
+		debugshort ^= 1;
+		break;
+	case 'd':
+		debugdir ^= 1;
+		break;
+	}
 }
 
 void ir_poll_long(ir_longrange_data_t *ir_longrange_data){
@@ -93,24 +115,27 @@ void ir_poll_long(ir_longrange_data_t *ir_longrange_data){
 
 	// Copy data from the ADC0 sample sequencer 0 to Buffer ir_data
 	ADCSequenceDataGet(ADC1_BASE, 0, (ir_longrange_data->adc_ir_long_data));
-//
-//	LogMsg(IR, MESSAGE, "IR data: %d\t%d\t%d\t%d\t%d\t", ir_longrange_data->adc_ir_long_data[0],
-//				ir_longrange_data->adc_ir_long_data[1], ir_longrange_data->adc_ir_long_data[2],
-//				ir_longrange_data->adc_ir_long_data[3], ir_longrange_data->adc_ir_long_data[4]);
 
+	if(debuglong){
+		LogMsg(IR, MESSAGE, "IR Long data: %d\t%d\t%d\t%d\t%d\t", ir_longrange_data->adc_ir_long_data[0],
+				ir_longrange_data->adc_ir_long_data[1], ir_longrange_data->adc_ir_long_data[2],
+				ir_longrange_data->adc_ir_long_data[3], ir_longrange_data->adc_ir_long_data[4]);
+		DelayMs(100);
+	}
 }
 
 void ir_poll_short(ir_shortrange_data_t *ir_shortrange_data){
 	// Turn on the short range IRs
-//	for(i = 0; i < IR_SHORTRANGE_SENSORS; i++){
-//		GPIOPinWrite(ir_shortrange[i].enable_gpio_port, ir_shortrange[i].enable_gpio_pin, 1);
-//	}
-//
-//	// Turn off the long range sensors
-//	// NOTE: setting the enable pin turns the IR off
-//	for(i = 0; i < IR_LONGRANGE_ENABLE_PINS; i++){
-//		GPIOPinWrite(ir_longrange[i].enable_gpio_port, ir_longrange[i].enable_gpio_pin, 1);
-//	}
+	int i =0;
+	for(i = 0; i < IR_SHORTRANGE_SENSORS; i++){
+		GPIOPinWrite(ir_shortrange[i].enable_gpio_port, ir_shortrange[i].enable_gpio_pin, 1);
+	}
+
+	// Turn off the long range sensors
+	// NOTE: setting the enable pin turns the IR off
+	for(i = 0; i < IR_LONGRANGE_ENABLE_PINS; i++){
+		GPIOPinWrite(ir_longrange[i].enable_gpio_port, ir_longrange[i].enable_gpio_pin, 1);
+	}
 
 	// Clear the flag
 	ADCIntClear(ADC1_BASE, 2);
@@ -128,81 +153,91 @@ void ir_poll_short(ir_shortrange_data_t *ir_shortrange_data){
 	ADCSequenceDataGet(ADC1_BASE, 2, (ir_shortrange_data->adc_ir_short_data));
 
 	// Turn off the short range IRs
-//	for(i = 0; i < IR_SHORTRANGE_SENSORS; i++){
-//		GPIOPinWrite(ir_shortrange[i].enable_gpio_port, ir_shortrange[i].enable_gpio_pin, 0);
-//	}
-//
-//	// Turn on the long range sensors
-//	// NOTE: clearing the enable pin turns the IR on
-//	for(i = 0; i < IR_LONGRANGE_ENABLE_PINS; i++){
-//		GPIOPinWrite(ir_longrange[i].enable_gpio_port, ir_longrange[i].enable_gpio_pin, 0);
-//	}
-}
-
-void EnemySetState(enemy_state_t newstate){
-	if(enemyState != newstate){
-		LogMsg(IR, MESSAGE, "Enemy State Updated: %s", enemyState2String[newstate]);
+	for(i = 0; i < IR_SHORTRANGE_SENSORS; i++){
+		GPIOPinWrite(ir_shortrange[i].enable_gpio_port, ir_shortrange[i].enable_gpio_pin, 0);
 	}
-	enemyState = newstate;
+
+	// Turn on the long range sensors
+	// NOTE: clearing the enable pin turns the IR on
+	for(i = 0; i < IR_LONGRANGE_ENABLE_PINS; i++){
+		GPIOPinWrite(ir_longrange[i].enable_gpio_port, ir_longrange[i].enable_gpio_pin, 0);
+	}
+
+	if(debugshort){
+		LogMsg(IR, MESSAGE, "IR Short data: %d\t%d", ir_shortrange_data->adc_ir_short_data[0], ir_shortrange_data->adc_ir_short_data[1]);
+		DelayMs(100);
+	}
 }
 
-enemy_state_t EnemyGetState(void){
-	return enemyState;
-}
-
-void update_ir(ir_longrange_data_t *ir_longrange_data){
-	// Poll the large IRs, determine if the short IRs are needed, set state
-//	LogMsg(IR, MESSAGE, "IR_UPDATE");
-	ir_poll_long(ir_longrange_data);
+void update_ir(ir_longrange_data_t *ir_longrange_data, ir_shortrange_data_t *ir_shortrange_data){
 	uint32_t temp = 0;
 	uint8_t dir = 10;
-	uint16_t diff = 0;
-	uint16_t IR_THRESHOLDS[5] = {800, 700, 700, 500, 600};
-	int i;
-	for(i=0; i<IR_LONGRANGE_SENSORS; i++){
-		if(ir_longrange_data->adc_ir_long_data[i] > 1200 && ir_longrange_data->adc_ir_long_data[i] > temp){
-			//if(ir_longrange_data->adc_ir_long_data[i]-IR_THRESHOLDS[i] > diff){
+	uint16_t long_diff = 0;
+	uint16_t short_diff = 0;
+	bool poll_long = true;
+	uint16_t IR__LONG_THRESHOLD[5] = {800, 700, 700, 500, 600}; // we need to come up with another solution
+	uint16_t IR_SHORT_THRESHOLD[2] = {500, 500}; // Check these values
+
+	// poll the small IRs and deteremine if the large ones are needed or if the enemy is in front of us
+	ir_poll_short(ir_shortrange_data);
+	if(ir_shortrange_data->adc_ir_short_data[0] > IR_SHORT_THRESHOLD[0] || ir_shortrange_data->adc_ir_short_data[1] > IR_SHORT_THRESHOLD[1]){
+		short_diff = ir_shortrange_data->adc_ir_short_data[0] - ir_shortrange_data->adc_ir_short_data[1];
+		if(abs(short_diff < 500)){	// if both IRs are triggered
+			poll_long = false;	// no need to use the long IRs
+			dir = 5; // Directly in front of you
+		}else if(ir_shortrange_data->adc_ir_short_data[0] > IR_SHORT_THRESHOLD[0]){ // if only the left IR was triggered
+			poll_long = false;	// no need to use the long IRs
+			dir = 0; // In front but to the left
+		}else if(ir_shortrange_data->adc_ir_short_data[1] > IR_SHORT_THRESHOLD[1]){	// if only the right IR was triggered
+			poll_long = false;	// no need to use the long IRs
+			dir = 1; // In front but to the right
+		}
+	}
+	if(poll_long){
+		ir_poll_long(ir_longrange_data);
+		int i;
+		for(i=0; i<IR_LONGRANGE_SENSORS; i++){
+			if(ir_longrange_data->adc_ir_long_data[i] > 1200 && ir_longrange_data->adc_ir_long_data[i] > temp){
+				// Do something here to determine where the enemy is with changing IR values.
+				//if(ir_longrange_data->adc_ir_long_data[i]-IR_THRESHOLDS[i] > diff){
 				//diff = ir_longrange_data->adc_ir_long_data[i]-IR_THRESHOLDS[i];
 				temp = ir_longrange_data->adc_ir_long_data[i];
 				dir = i;
-			//}
+				//}
+			}
+		}
+		if(dir == 0 || dir == 1){
+			// If one of the front IRs are triggered, is the enemy directly in front of you or off at an angle
+			long_diff = ir_longrange_data->adc_ir_long_data[0] - ir_longrange_data->adc_ir_long_data[1];
+			if(abs(long_diff < 500)){
+				dir = 5; // Directly in front of you
+			}
 		}
 	}
-	if(dir == 0 || dir == 1){
-		diff = ir_longrange_data->adc_ir_long_data[0] - ir_longrange_data->adc_ir_long_data[1];
-		if(abs(diff < 500)){
-			dir = 5; // Directly in front of you
-		}
+	if(debugdir){
+		LogMsg(IR, MESSAGE, "IR dir: %d", dir);
 	}
-
-//	LogMsg(IR, MESSAGE, "IR dir: %d", dir);
-//	switch(dir){
-//		case 0:
-//			SumoSetState(FRONT_LEFT); // to the front left
-//			break;
-//		case 1:
-////			EnemySetState(FRONT);
-//			SumoSetState(FRONT_RIGHT);	// to the front right
-//			break;
-//		case 2:
-////			EnemySetState(LEFT);
-//			SumoSetState(TURN_LEFT);	// to the left
-//			break;
-//		case 3:
-////			EnemySetState(RIGHT);
-//			SumoSetState(TURN_RIGHT);	// to the right
-//			break;
-//		case 4:
-////			EnemySetState(BACK);
-//			SumoSetState(TURN_AROUND);	// behind you
-//			break;
-//		case 5:
-//			SumoSetState(ATTACK);	// Directly in front
-//			break;
-//		default:
-////			EnemySetState(NONE);
-////			SumoSetState(ATTACK);	// can't see anything
-//			break;
-//	}
-	DelayMs(200);
+	switch(dir){
+	case 0:
+		SumoSetState(FRONT_LEFT); // to the front left
+		break;
+	case 1:
+		SumoSetState(FRONT_RIGHT);	// to the front right
+		break;
+	case 2:
+		SumoSetState(TURN_LEFT);	// to the left
+		break;
+	case 3:
+		SumoSetState(TURN_RIGHT);	// to the right
+		break;
+	case 4:
+		SumoSetState(TURN_AROUND);	// behind you
+		break;
+	case 5:
+		SumoSetState(ATTACK);	// Directly in front
+		break;
+	default:
+//		SumoSetState(SEARCH);	// can't see anything
+		break;
+	}
 }

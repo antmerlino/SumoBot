@@ -34,6 +34,7 @@ void PollStartButton(void);
 ir_shortrange_data_t ir_shortrange_data;
 ir_longrange_data_t ir_longrange_data;
 tint_t Search_StartTime = 0;
+tint_t Scan_StartTime = 0;
 
 int main(void)
 {
@@ -44,8 +45,8 @@ int main(void)
 
 	SUMO_VERSION.word = 0x14110800LU;
 
-	ReflectiveInit();
-	ir_init();
+
+	//ir_init();
 	TimerInit();
 	TaskInit();
 	SystemInit();
@@ -66,12 +67,14 @@ int main(void)
 	MotorsEnableFront();
 	MotorsEnableBack();
 
-	//	MotorsDisableFront();
-	//	MotorsDisableBack();
+//	MotorsDisableFront();
+//	MotorsDisableBack();
 
 	IntMasterEnable();
-
+	ReflectiveInit();
 	while(1){
+		MotorsEnableFront();
+		MotorsEnableBack();
 		switch (state){
 		case IDLE:
 			motors[FRONTLEFT_MOTOR].duty_tenths_perc = 0;
@@ -81,45 +84,44 @@ int main(void)
 			break;
 		case SEARCH:
 			// If true, we haven't started searching yet
-			if(searchDir == CW){
-//					Search_StartTime = TimeNow();
-//					searchDir++;
-				motors[FRONTLEFT_MOTOR].direction = CW;
-				motors[BACKLEFT_MOTOR].direction = CW;
-				motors[FRONTRIGHT_MOTOR].direction = CW;
-				motors[BACKRIGHT_MOTOR].direction = CW;
-			}
-//				// Switch Directions
-//				if(TimeSince(Search_StartTime) > SEARCH_TURN_TIME){
-//					Search_StartTime = TimeNow();
-//					// If search count is greater than 1, go back to idle
-//					if(searchDir > CCW){
-//						searchDir = CW;
-//						state = IDLE;
-//						break;
-//					}
-//					searchDir++;
-//					motors[FRONTLEFT_MOTOR].direction ^= 1;
-//					motors[BACKLEFT_MOTOR].direction ^= 1;
-//					motors[FRONTRIGHT_MOTOR].direction ^= 1;
-//					motors[BACKRIGHT_MOTOR].direction ^= 1;
+//			if(searchDir == CW){
+//				Search_StartTime = TimeNow();
+//				searchDir++;
+//				motors[FRONTLEFT_MOTOR].direction = CW;
+//				motors[BACKLEFT_MOTOR].direction = CW;
+//				motors[FRONTRIGHT_MOTOR].direction = CW;
+//				motors[BACKRIGHT_MOTOR].direction = CW;
+//			}
+//			// Switch Directions
+//			if(TimeSince(Search_StartTime) > SEARCH_TURN_TIME){
+//				Search_StartTime = TimeNow();
+//				// If search count is greater than 1, go back to idle
+//				if(searchDir > CCW){
+//					searchDir = CW;
+//					state = IDLE;
+//					break;
 //				}
+//				searchDir++;
+//				motors[FRONTLEFT_MOTOR].direction ^= 1;
+//				motors[BACKLEFT_MOTOR].direction ^= 1;
+//				motors[FRONTRIGHT_MOTOR].direction ^= 1;
+//				motors[BACKRIGHT_MOTOR].direction ^= 1;
+//			}
 			motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
 			motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
 			motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
 			motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
 			break;
 		case ATTACK:
-			motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
-			motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
-			motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
-			motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
-
 			motors[FRONTLEFT_MOTOR].direction = CCW;
 			motors[BACKLEFT_MOTOR].direction = CCW;
 			motors[FRONTRIGHT_MOTOR].direction = CW;
 			motors[BACKRIGHT_MOTOR].direction = CW;
 
+			motors[FRONTLEFT_MOTOR].duty_tenths_perc = SPEED;
+			motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
+			motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
+			motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
 			break;
 		case REVERSE:
 			motors[FRONTLEFT_MOTOR].direction = CW;
@@ -147,7 +149,7 @@ int main(void)
 			motors[BACKLEFT_MOTOR].duty_tenths_perc = SPEED;
 			motors[FRONTRIGHT_MOTOR].duty_tenths_perc = SPEED;
 			motors[BACKRIGHT_MOTOR].duty_tenths_perc = SPEED;
-//what is the point of this if it is the same as TURN_LEFT?
+			//what is the point of this if it is the same as TURN_LEFT?
 			if(TimeSince(moveTimer) > TURN_AROUND_TIME){
 				SumoSetState(ATTACK);
 			}
@@ -221,23 +223,23 @@ int main(void)
 		}// switch
 		PollStartButton();
 		SystemTick();
-		MotorsUpdate();
-		if(state != REVERSE && state != REVERSE_LEFT && state != REVERSE_RIGHT && state != TURN_AROUND && state != IDLE){
-			if(TimeSince(Search_StartTime) > IR_TIMEOUT){
-				Search_StartTime = TimeNow();
-				update_ir(&ir_longrange_data);
-//					ir_poll_long(&ir_longrange_data);
-			}
-		}
+		MotorsUpdate(); // Add a state check here?
+//		if(state != REVERSE && state != REVERSE_LEFT && state != REVERSE_RIGHT && state != TURN_AROUND && state != IDLE){
+//			if(TimeSince(Scan_StartTime) > IR_TIMEOUT){
+//				Scan_StartTime = TimeNow();
+////				update_ir(&ir_longrange_data, &ir_shortrange_data);
+//			}
+//		}
 	}// while
 }
 
 
 void PollStartButton(void){
 	if(!GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_2) && (SumoGetState() == IDLE)){
+		LogMsg(SUMO, MESSAGE, "Start Button Pressed.");
 		DelayMs(5000);
 		SumoSetState(ATTACK);
-		Search_StartTime = TimeNow();
+		Scan_StartTime = TimeNow();
 	}
 }
 
@@ -248,19 +250,19 @@ void SumoSetState(sumo_state_t newState){
 
 		switch (state){
 		case TURN_AROUND:
-			motors[FRONTLEFT_MOTOR].direction = BRAKE;
-			motors[BACKLEFT_MOTOR].direction = BRAKE;
-			motors[FRONTRIGHT_MOTOR].direction = BRAKE;
-			motors[BACKRIGHT_MOTOR].direction = BRAKE;
-			MotorsUpdate();
+//			motors[FRONTLEFT_MOTOR].direction = BRAKE;
+//			motors[BACKLEFT_MOTOR].direction = BRAKE;
+//			motors[FRONTRIGHT_MOTOR].direction = BRAKE;
+//			motors[BACKRIGHT_MOTOR].direction = BRAKE;
+//			MotorsUpdate();
 			moveTimer = TimeNow();
 			break;
 		case REVERSE:
-			motors[FRONTLEFT_MOTOR].direction = BRAKE;
-			motors[BACKLEFT_MOTOR].direction = BRAKE;
-			motors[FRONTRIGHT_MOTOR].direction = BRAKE;
-			motors[BACKRIGHT_MOTOR].direction = BRAKE;
-			MotorsUpdate();
+//			motors[FRONTLEFT_MOTOR].direction = BRAKE;
+//			motors[BACKLEFT_MOTOR].direction = BRAKE;
+//			motors[FRONTRIGHT_MOTOR].direction = BRAKE;
+//			motors[BACKRIGHT_MOTOR].direction = BRAKE;
+//			MotorsUpdate();
 			moveTimer = TimeNow();
 			break;
 		}

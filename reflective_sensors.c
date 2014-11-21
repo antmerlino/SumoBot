@@ -76,23 +76,23 @@ void ReflectiveISR(void) {
 
 	// Clear the interrupt
 	ADCComparatorIntClear(ADC0_BASE, 0x0F); // Clear the interrupt
-
+	LogMsg(REFLECT, MESSAGE, "%d", GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_5));
 	switch(comparatorStatus){
 
 	case COMPARATOR_0:
-		LogMsg(REFLECT, MESSAGE, "Left Sensor Detected Edge");
+//		LogMsg(REFLECT, MESSAGE, "Left Sensor Detected Edge");
 //		if(SumoGetState() != IDLE){
 //			SumoSetState(REVERSE_RIGHT);
 //		}
 		break;
 	case COMPARATOR_1:
-		LogMsg(REFLECT, MESSAGE, "Center Sensor Detected Edge");
+//		LogMsg(REFLECT, MESSAGE, "Center Sensor Detected Edge");
 //		if(SumoGetState() != IDLE){
 //			SumoSetState(REVERSE);
 //		}
 		break;
 	case COMPARATOR_2:
-		LogMsg(REFLECT, MESSAGE, "Right Sensor Detected Edge");
+//		LogMsg(REFLECT, MESSAGE, "Right Sensor Detected Edge");
 //		if(SumoGetState() != IDLE){
 //			SumoSetState(REVERSE_LEFT);
 //		}

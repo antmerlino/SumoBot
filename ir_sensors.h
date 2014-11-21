@@ -133,6 +133,6 @@ void ir_poll_long(ir_longrange_data_t *ir_longrange_data);
 void ir_poll_short(ir_shortrange_data_t * ir_shortrange_data);
 void SumoSetEnemyState(enemy_state_t);
 enemy_state_t SumoGetEnemyState(void);
-void update_ir(ir_longrange_data_t *ir_longrange_data);
+void update_ir(ir_longrange_data_t *ir_longrange_data, ir_shortrange_data_t * ir_shortrange_data);
 
 #endif

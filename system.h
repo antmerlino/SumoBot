@@ -22,6 +22,7 @@ enum sys_index {
     REFLECT,
     IR,
     MOTOR,
+    SERVO,
     // ADD SUBSYSTEMS ABOVE //
     UNKNOWN
 };
