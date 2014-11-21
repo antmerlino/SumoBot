@@ -22,12 +22,12 @@
 #define SPAN_VALUE (MAX_PULSE_WIDTH - MIN_PULSE_WIDTH)
 
 typedef struct{
-	uint8_t gpio_port;
-	uint8_t gpio_pin;
+	uint32_t gpio_port;
+	uint32_t gpio_pin;
 	uint32_t pwm_module;
 	uint32_t pwm_base;
-	uint8_t pwm_gen;
-	uint8_t pwm_pin;
+	uint32_t pwm_gen;
+	uint32_t pwm_pin;
 	uint16_t duty;
 } servo_config_t;
 
@@ -36,16 +36,16 @@ static servo_config_t servo_config = {
 	GPIO_PORTB_BASE,
 	GPIO_PIN_6,
 	GPIO_PB6_M0PWM0,
-	PWM1_BASE,
-	PWM_GEN_2,
-	PWM_OUT_7,
+	PWM0_BASE,
+	PWM_GEN_0,
+	PWM_OUT_0,
 	1200 // Arbitrary number between 450 and 1450
 };
 
 // Init software PWM system
-void servo_init(void);
+void ServoInit(void);
 
 // Set the position of the servo attached to channel
-void servo_set_position(uint32_t pos);
+void ServoSetPosition(uint32_t pos);
 
 #endif

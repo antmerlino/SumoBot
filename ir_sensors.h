@@ -128,11 +128,12 @@ typedef union{
 	};
 } ir_shortrange_data_t;
 
-void ir_init(void);
-void ir_poll_long(ir_longrange_data_t *ir_longrange_data);
-void ir_poll_short(ir_shortrange_data_t * ir_shortrange_data);
+void IR_Init(void);
+void IR_PollLong(void);
+void IR_PollShort(void);
 void SumoSetEnemyState(enemy_state_t);
 enemy_state_t SumoGetEnemyState(void);
-void update_ir(ir_longrange_data_t *ir_longrange_data, ir_shortrange_data_t * ir_shortrange_data);
+int16_t IR_GetFrontDiff(void);
+void IR_Update(void);
 
 #endif

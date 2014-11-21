@@ -21,30 +21,28 @@ uint16_t ui16Period; // Change from 32 bit to 16 bit.
 void ServoLogCallback(char * cmd);
 
 // Init software PWM system
-void servo_init(){
-	// Set up PWM clock
-	// set to SYSCLK/64 = 625KHz
-	SysCtlPWMClockSet(SYSCTL_PWMDIV_64);
+void ServoInit(){
+
+	uint8_t pin_mask;
 
 	// Enable pwm modules
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_PWM0);
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
 
-	// Enable servo pwm output port/pin
-	GPIOPinTypePWM(servo_config.gpio_port, servo_config.gpio_pin);
-
 	// Configure servo pwm module
 	GPIOPinConfigure(servo_config.pwm_module);
 
+	// Enable servo pwm output port/pin
+	GPIOPinTypePWM(servo_config.gpio_port, servo_config.gpio_pin);
 
 	uint32_t ui32PWMClock = (SysCtlClockGet() / PWM_DIV); // get the current pwmClock in Hz (Currently 40000000/64 = 625 KHz)
 	ui16Period = (ui32PWMClock / PWM_FREQ); // value loaded into the register (Currently 12500) ~20 ms period
-	PWMGenConfigure(servo_config.pwm_base, servo_config.pwm_gen, PWM_GEN_MODE_DOWN);
+	PWMGenConfigure(servo_config.pwm_base, servo_config.pwm_gen, PWM_GEN_MODE_DOWN | PWM_GEN_MODE_NO_SYNC);
 	PWMGenPeriodSet(servo_config.pwm_base, servo_config.pwm_gen, ui16Period);
-
-	PWMPulseWidthSet(servo_config.pwm_base, servo_config.pwm_pin, ui16Period * .05); // ~1 ms - 0 degrees
-	PWMOutputState(servo_config.pwm_base, (1 << (0xF & servo_config.pwm_pin)), true);
+	ServoSetPosition(170);
 	PWMGenEnable(servo_config.pwm_base, servo_config.pwm_gen);
+	pin_mask = 1 << (0x0000000F & servo_config.pwm_pin);
+	PWMOutputState(servo_config.pwm_base, pin_mask, true);
 
 	// Add debugging option
 	SERVO_VERSION.word = 0x14110800LU;
@@ -56,13 +54,10 @@ void ServoLogCallback(char * cmd) {
 	//	LogMsg(MOTOR, MESSAGE, "CMD Received: %s", cmd);
 	switch(*cmd){
 	case '0':
-		servo_set_position(0);
+		ServoSetPosition(170);
 		break;
 	case '1':
-		servo_set_position(90);
-		break;
-	case '2':
-		servo_set_position(180);
+		ServoSetPosition(27);
 		break;
 	default:
 		break;
@@ -70,7 +65,7 @@ void ServoLogCallback(char * cmd) {
 }
 
 // Set the position of the servo attached to channel
-void servo_set_position(uint32_t position){
+void ServoSetPosition(uint32_t position){
 	// Scale the position
 	position = position * (MAX_PULSE_WIDTH - MIN_PULSE_WIDTH)/MAX_POSITION + MIN_PULSE_WIDTH;
 

@@ -11,6 +11,7 @@
 typedef enum sumo_state_t {
 	IDLE = 0,
 	SEARCH,
+	FORWARD,
 	ATTACK,
 	REVERSE,
 	TURN_AROUND,

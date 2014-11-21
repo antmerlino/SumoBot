@@ -16,6 +16,7 @@
 
 #include "reflective_sensors.h"
 #include "timing.h"
+#include "system.h"
 #include "subsys.h"
 #include "sumo.h"
 
@@ -24,6 +25,11 @@
 #define COMPARATOR_2 4
 
 version_t REFLECT_VERSION;
+
+uint8_t DEBUG = 0;
+
+// Callback function definition
+void REFLECTIVE_LogCallback(char * cmd);
 
 void ReflectiveInit(){
 	// Init ADC system peripherals
@@ -68,6 +74,18 @@ void ReflectiveInit(){
 
 	REFLECT_VERSION.word = 0x14110800LU;
 	SubsystemInit(REFLECT, MESSAGE, "REFLECT", REFLECT_VERSION);
+	RegisterCallback(IR, REFLECTIVE_LogCallback);
+}
+
+void REFLECTIVE_LogCallback(char * cmd) {
+	//	LogMsg(MOTOR, MESSAGE, "CMD Received: %s", cmd);
+	switch(*cmd) {
+	case 'd':
+		DEBUG ^= 1;
+		break;
+	default:
+		break;
+	}
 }
 
 void ReflectiveISR(void) {
@@ -76,32 +94,37 @@ void ReflectiveISR(void) {
 
 	// Clear the interrupt
 	ADCComparatorIntClear(ADC0_BASE, 0x0F); // Clear the interrupt
-	LogMsg(REFLECT, MESSAGE, "%d", GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_5));
 	switch(comparatorStatus){
 
 	case COMPARATOR_0:
-//		LogMsg(REFLECT, MESSAGE, "Left Sensor Detected Edge");
-//		if(SumoGetState() != IDLE){
-//			SumoSetState(REVERSE_RIGHT);
-//		}
+		if(DEBUG){
+			LogMsg(REFLECT, MESSAGE, "Left Sensor Detected Edge");
+		}
+		if(SumoGetState() != IDLE){
+			SumoSetState(REVERSE);
+		}
 		break;
 	case COMPARATOR_1:
-//		LogMsg(REFLECT, MESSAGE, "Center Sensor Detected Edge");
-//		if(SumoGetState() != IDLE){
-//			SumoSetState(REVERSE);
-//		}
+		if(DEBUG){
+			LogMsg(REFLECT, MESSAGE, "Center Sensor Detected Edge");
+		}
+		if(SumoGetState() != IDLE){
+			SumoSetState(REVERSE);
+		}
 		break;
 	case COMPARATOR_2:
-//		LogMsg(REFLECT, MESSAGE, "Right Sensor Detected Edge");
-//		if(SumoGetState() != IDLE){
-//			SumoSetState(REVERSE_LEFT);
-//		}
+		if(DEBUG){
+			LogMsg(REFLECT, MESSAGE, "Right Sensor Detected Edge");
+		}
+		if(SumoGetState() != IDLE){
+			SumoSetState(REVERSE);
+		}
 		break;
 	}
 
-	if(SumoGetState() != IDLE){
-		SumoSetState(REVERSE);
-	}
+//		if(SumoGetState() != IDLE){
+//			SumoSetState(REVERSE);
+//		}
 }
 
 //// Do we really need this? Why not just leave the IRs on and have the interrupt thrown when we see white?

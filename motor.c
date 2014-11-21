@@ -129,6 +129,18 @@ void MotorLogCallback(char * cmd) {
 		MotorsDisableFront();
 		MotorsDisableBack();
 		break;
+	case '1':
+		MotorsDisableFront();
+		MotorsDisableBack();
+		break;
+	case '2':
+		MotorsDisableFront();
+		MotorsDisableBack();
+		break;
+	case '3':
+		MotorsDisableFront();
+		MotorsDisableBack();
+		break;
 	}
 }
 
