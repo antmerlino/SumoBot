@@ -9,7 +9,7 @@
 #include <inc/hw_ints.h>
 #include <inc/hw_gpio.h>
 #include <driverlib/pin_map.h>
-
+#include <driverlib/pwm.h>
 #include <driverlib/sysctl.h>
 
 #define PWM_FREQ 50 // refresh rate 20 ms
@@ -17,7 +17,7 @@
 
 #define MIN_PULSE_WIDTH	450
 #define MAX_PULSE_WIDTH	1450
-#define MAX_POSITION	180
+#define MAX_POSITION	180.0
 
 #define SPAN_VALUE (MAX_PULSE_WIDTH - MIN_PULSE_WIDTH)
 
@@ -46,6 +46,7 @@ static servo_config_t servo_config = {
 void ServoInit(void);
 
 // Set the position of the servo attached to channel
-void ServoSetPosition(uint32_t pos);
+void ServoSetPosition(double pos);
+
 
 #endif

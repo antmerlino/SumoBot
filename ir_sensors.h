@@ -131,8 +131,6 @@ typedef union{
 void IR_Init(void);
 void IR_PollLong(void);
 void IR_PollShort(void);
-void SumoSetEnemyState(enemy_state_t);
-enemy_state_t SumoGetEnemyState(void);
 int16_t IR_GetFrontDiff(void);
 void IR_Update(void);
 

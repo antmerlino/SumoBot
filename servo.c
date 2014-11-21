@@ -65,7 +65,7 @@ void ServoLogCallback(char * cmd) {
 }
 
 // Set the position of the servo attached to channel
-void ServoSetPosition(uint32_t position){
+void ServoSetPosition(double position){
 	// Scale the position
 	position = position * (MAX_PULSE_WIDTH - MIN_PULSE_WIDTH)/MAX_POSITION + MIN_PULSE_WIDTH;
 

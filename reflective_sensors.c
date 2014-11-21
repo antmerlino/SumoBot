@@ -94,37 +94,39 @@ void ReflectiveISR(void) {
 
 	// Clear the interrupt
 	ADCComparatorIntClear(ADC0_BASE, 0x0F); // Clear the interrupt
-	switch(comparatorStatus){
 
-	case COMPARATOR_0:
-		if(DEBUG){
-			LogMsg(REFLECT, MESSAGE, "Left Sensor Detected Edge");
+	if(SumoGetState() != IDLE && SumoGetState() != REVERSE && SumoGetState() != REVERSE_LEFT && SumoGetState() != REVERSE_RIGHT){
+		switch(comparatorStatus){
+		case COMPARATOR_0:
+			if(DEBUG){
+				LogMsg(REFLECT, MESSAGE, "Left Sensor Detected Edge");
+			}
+			if(SumoGetState() != IDLE){
+				SumoSetState(REVERSE_RIGHT);
+			}
+			break;
+		case COMPARATOR_1:
+			if(DEBUG){
+				LogMsg(REFLECT, MESSAGE, "Center Sensor Detected Edge");
+			}
+			if(SumoGetState() != IDLE){
+				SumoSetState(REVERSE);
+			}
+			break;
+		case COMPARATOR_2:
+			if(DEBUG){
+				LogMsg(REFLECT, MESSAGE, "Right Sensor Detected Edge");
+			}
+			if(SumoGetState() != IDLE){
+				SumoSetState(REVERSE_LEFT);
+			}
+			break;
 		}
-		if(SumoGetState() != IDLE){
-			SumoSetState(REVERSE);
-		}
-		break;
-	case COMPARATOR_1:
-		if(DEBUG){
-			LogMsg(REFLECT, MESSAGE, "Center Sensor Detected Edge");
-		}
-		if(SumoGetState() != IDLE){
-			SumoSetState(REVERSE);
-		}
-		break;
-	case COMPARATOR_2:
-		if(DEBUG){
-			LogMsg(REFLECT, MESSAGE, "Right Sensor Detected Edge");
-		}
-		if(SumoGetState() != IDLE){
-			SumoSetState(REVERSE);
-		}
-		break;
 	}
 
-//		if(SumoGetState() != IDLE){
-//			SumoSetState(REVERSE);
-//		}
+	//		if(SumoGetState() != IDLE){
+	//			SumoSetState(REVERSE);
+	//		}
 }
 
 //// Do we really need this? Why not just leave the IRs on and have the interrupt thrown when we see white?

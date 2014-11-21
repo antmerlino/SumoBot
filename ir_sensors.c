@@ -13,10 +13,13 @@
 #include <driverlib/debug.h>
 #include <driverlib/adc.h>
 #include <driverlib/sysctl.h>
+#include <driverlib/pin_map.h>
+#include <inc/hw_pwm.h>
 
 #include "ir_sensors.h"
 #include "subsys.h"
 #include "sumo.h"
+#include "servo.h"
 
 version_t IR_VERSION;
 
@@ -27,6 +30,9 @@ uint8_t debuglong = 0;
 uint8_t debugshort = 0;
 uint8_t debugdir = 0;
 uint16_t THRESHOLD = 1400;
+
+uint16_t IR_LONG_THRESHOLD[5] = {1400, 1400, 1200, 1200, 1200}; // we need to come up with another solution
+uint16_t IR_SHORT_THRESHOLD[2] = {500, 500}; // Check these values
 
 // Callback function definition
 void IR_LogCallback(char * cmd);
@@ -222,40 +228,39 @@ int16_t IR_GetFrontDiff(void){
 }
 
 void IR_Update(void){
-	uint32_t temp = 0;
+	uint32_t long_temp = 0;
+	uint32_t short_temp = 0;
 	uint8_t dir = 10;
 	static uint8_t prev_dir = 10;
 	int16_t long_diff = 0;
 	uint16_t front_long_avg = 0;
 	uint16_t short_diff = 0;
 	bool poll_long = true;
-	uint16_t IR_LONG_THRESHOLD[5] = {1400, 1400, 1200, 1200, 1200}; // we need to come up with another solution
-	uint16_t IR_SHORT_THRESHOLD[2] = {500, 500}; // Check these values
 
-	//	// poll the small IRs and determine if the large ones are needed or if the enemy is in front of us
+	// poll the small IRs and determine if the large ones are needed or if the enemy is in front of us
 	//	IR_PollShort();
-	//	if(ir_shortrange_data->adc_ir_short_data[0] > IR_SHORT_THRESHOLD[0] || ir_shortrange_data->adc_ir_short_data[1] > IR_SHORT_THRESHOLD[1]){
-	//		short_diff = ir_shortrange_data->adc_ir_short_data[0] - ir_shortrange_data->adc_ir_short_data[1];
-	//		if(abs(short_diff < 500)){	// if both IRs are triggered
-	//			poll_long = false;	// no need to use the long IRs
-	//			dir = 5; // Directly in front of you
-	//		}else if(ir_shortrange_data->adc_ir_short_data[0] > IR_SHORT_THRESHOLD[0]){ // if only the left IR was triggered
-	//			poll_long = false;	// no need to use the long IRs
-	//			dir = 0; // In front but to the left
-	//		}else if(ir_shortrange_data->adc_ir_short_data[1] > IR_SHORT_THRESHOLD[1]){	// if only the right IR was triggered
-	//			poll_long = false;	// no need to use the long IRs
-	//			dir = 1; // In front but to the right
+	//	int i;
+	//	for(i = 0; i < IR_SHORTRANGE_SENSORS; i++){
+	//		if(ir_shortrange_data.adc_ir_short_data[i] > IR_SHORT_THRESHOLD[i] && ir_shortrange_data.adc_ir_short_data[i] > short_temp){
+	//			short_temp = ir_shortrange_data.adc_ir_short_data[i];
+	//			dir = i;
+	//			poll_long = false;
 	//		}
 	//	}
+	//	if(ir_longrange_data.adc_ir_long_data[!dir] > IR_LONG_THRESHOLD[!dir]){
+	//		dir = 5;
+	//	}
+
+	// If the short range IR sensors didn't see anything, use the long ones
 	if(poll_long){
 		IR_PollLong();
 		int i;
 		for(i = 0; i < IR_LONGRANGE_SENSORS; i++){
-			if(ir_longrange_data.adc_ir_long_data[i] > IR_LONG_THRESHOLD[i] && ir_longrange_data.adc_ir_long_data[i] > temp){
+			if(ir_longrange_data.adc_ir_long_data[i] > IR_LONG_THRESHOLD[i] && ir_longrange_data.adc_ir_long_data[i] > long_temp){
 				// Do something here to determine where the enemy is with changing IR values.
 				//if(ir_longrange_data->adc_ir_long_data[i]-IR_THRESHOLDS[i] > diff){
 				//diff = ir_longrange_data->adc_ir_long_data[i]-IR_THRESHOLDS[i];
-				temp = ir_longrange_data.adc_ir_long_data[i];
+				long_temp = ir_longrange_data.adc_ir_long_data[i];
 				dir = i;
 				//}
 			}
@@ -264,12 +269,12 @@ void IR_Update(void){
 			if(ir_longrange_data.adc_ir_long_data[!dir] > IR_LONG_THRESHOLD[!dir]){
 				dir = 5;
 			}
-//			// If one of the front IRs are triggered, is the enemy directly in front of you or off at an angle
-//			long_diff = ir_longrange_data.left - ir_longrange_data.right;
-//			front_long_avg = (ir_longrange_data.left - ir_longrange_data.right)/2;
-//			if(abs(long_diff < 500)){
-//				dir = 5; // Directly in front of you
-//			}
+			//			// If one of the front IRs are triggered, is the enemy directly in front of you or off at an angle
+			//			long_diff = ir_longrange_data.left - ir_longrange_data.right;
+			//			front_long_avg = (ir_longrange_data.left - ir_longrange_data.right)/2;
+			//			if(abs(long_diff < 500)){
+			//				dir = 5; // Directly in front of you
+			//			}
 		}
 	}
 	if(debugdir){
@@ -284,31 +289,38 @@ void IR_Update(void){
 		dir = 3;
 	}
 
-	prev_dir = dir;
+	if(prev_dir == 4 && (dir == 2 || dir == 0)){
+		dir = 4;
+	}
 
-	if(SumoGetState() != IDLE && SumoGetState() != REVERSE && SumoGetState() != REVERSE_LEFT && SumoGetState() != REVERSE_RIGHT){
+	if(dir != 10){
+		prev_dir = dir;
+	}
+
+	if(SumoGetState() != IDLE && SumoGetState() != REVERSE && SumoGetState() != REVERSE_LEFT && SumoGetState() != REVERSE_RIGHT && SumoGetState() != AVOID){
 		switch(dir){
-		case 0:
-			SumoSetState(FRONT_LEFT); // to the front left
-			break;
-		case 1:
-			SumoSetState(FRONT_RIGHT);	// to the front right
-			break;
-		case 2:
-			SumoSetState(TURN_LEFT);	// to the left
-			break;
-		case 3:
-			SumoSetState(TURN_RIGHT);	// to the right
-			break;
-		case 4:
-			SumoSetState(TURN_LEFT);	// behind you
-			break;
-		case 5:
-			SumoSetState(FORWARD);	// Directly in front
-			break;
-		default:
-			//		SumoSetState(SEARCH);	// can't see anything, continue
-			break;
-		}
+			case 0:
+				SumoSetState(FRONT_LEFT); // to the front left
+				break;
+			case 1:
+				SumoSetState(FRONT_RIGHT);	// to the front right
+				break;
+			case 2:
+				SumoSetState(TURN_LEFT);	// to the left
+				break;
+			case 3:
+				SumoSetState(TURN_RIGHT);	// to the right
+				break;
+			case 4:
+				SumoSetState(TURN_LEFT);	// behind you
+				break;
+			case 5:
+				SumoSetState(FORWARD);	// Directly in front
+				break;
+			default:
+				//			SumoSetState(SEARCH);	// can't see anything, continue
+				break;
+			}
 	}
 }
+

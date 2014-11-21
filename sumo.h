@@ -20,7 +20,10 @@ typedef enum sumo_state_t {
 	FRONT_LEFT,
 	FRONT_RIGHT,
 	REVERSE_LEFT,
-	REVERSE_RIGHT
+	REVERSE_RIGHT,
+	MOVETOCENTER,
+	BRAKES,
+	AVOID
 } sumo_state_t;
 
 
