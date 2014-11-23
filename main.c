@@ -17,7 +17,7 @@
 version_t SUMO_VERSION;
 
 #define TURN_AROUND_TIME 350
-#define REVERSE_TIME 400 //275
+#define REVERSE_TIME 300 //275
 #define MOVE_TO_CENTER_TIME 1000
 #define SEARCH_TURN_TIME 350
 #define TURN_TIMEOUT 1000
@@ -315,10 +315,6 @@ int main(void)
 			break;
 		}// switch
 
-
-		if((state == TURN_LEFT || state == TURN_RIGHT) && TimeSince(lastStateUpdate) > 750){
-			SumoSetState(AVOID);
-		}
 		if(state == FORWARD && TimeSince(lastStateUpdate) > 5000){
 			SumoSetState(ATTACK);
 		}
@@ -336,12 +332,13 @@ void PollStartButton(void){
 		lastBtnPress = TimeNow();
 		if(SumoGetState() == IDLE){
 			LogMsg(SUMO, MESSAGE, "Start Button Pressed.");
-			ServoSetPosition(23);
+			ServoSetPosition(25);
 			DelayMs(250);
-			SumoSetState(MOVETOCENTER);
+			SumoSetState(FORWARD);
+			TaskScheduleAdd(IR_Update, TASK_MEDIUM_PRIORITY, 0, 70);
 			Scan_StartTime = TimeNow();
 			moveTimer = TimeNow();
-			TaskScheduleAdd(IR_Update, TASK_MEDIUM_PRIORITY, 1000, 70);
+
 		} else {
 			SumoSetState(IDLE);
 			ServoSetPosition(170);
